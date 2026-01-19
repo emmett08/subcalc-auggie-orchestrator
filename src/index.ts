@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { runOrchestrator } from "./orchestrator.js";
 
+type models = "haiku4.5" | "sonnet4.5" | "sonnet4" | "gpt5";
+
 program()
   .then(() => void 0)
   .catch((err) => {
@@ -39,14 +41,14 @@ async function program() {
     verifierPrompt: string;
     refactorerPrompt: string;
     workspace: string;
-    model: string;
+    model: models;
     auggiePath: string;
     maxIterations: number;
     verifierInterval: number;
     maxTurns: number;
     allowUnsafe: boolean;
-    apiKey?: string;
-    apiUrl?: string;
+    apiKey?: string | undefined;
+    apiUrl?: string | undefined;
   }>();
 
   const workspaceRoot = resolve(opts.workspace);

@@ -6,20 +6,22 @@ import { createBuilderTools, createRefactorerTools, createVerifierTools } from "
 import { mutex } from "./tools/mutex.js";
 import { extractTaggedJson } from "./util/extractTaggedJson.js";
 
+type models = "haiku4.5" | "sonnet4.5" | "sonnet4" | "gpt5";
+
 type OrchestratorOpts = {
   frdText: string;
   builderSystemPrompt: string;
   verifierSystemPrompt: string;
   refactorerSystemPrompt: string;
   workspaceRoot: string;
-  model: string;
+  model: models;
   auggiePath: string;
   maxIterations: number;
   verifierIntervalSec: number;
   maxTurns: number;
   allowUnsafe: boolean;
-  apiKey?: string;
-  apiUrl?: string;
+  apiKey?: string | undefined;
+  apiUrl?: string | undefined;
 };
 
 type VerifierVerdict = "UNKNOWN" | "PASS" | "FAIL";
@@ -102,10 +104,10 @@ export async function runOrchestrator(opts: OrchestratorOpts): Promise<void> {
     workspaceRoot: opts.workspaceRoot,
     model: opts.model,
     allowIndexing: true,
-    apiKey: opts.apiKey,
-    apiUrl: opts.apiUrl,
+    ...(opts.apiKey !== undefined && { apiKey: opts.apiKey }),
+    ...(opts.apiUrl !== undefined && { apiUrl: opts.apiUrl }),
     cliArgs: [`--max-turns=${opts.maxTurns}`]
-  } as const;
+  };
 
   const builderClient = await Auggie.create({ ...commonCreate, tools: builderTools });
   const verifierClient = await Auggie.create({ ...commonCreate, tools: verifierTools });
