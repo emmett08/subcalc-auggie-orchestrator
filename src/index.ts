@@ -3,9 +3,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { runOrchestrator } from "./orchestrator.js";
-
-type models = "haiku4.5" | "sonnet4.5" | "sonnet4" | "gpt5";
+import { runOrchestrator, type AuggieModel } from "./orchestrator.js";
 
 program()
   .then(() => void 0)
@@ -41,7 +39,7 @@ async function program() {
     verifierPrompt: string;
     refactorerPrompt: string;
     workspace: string;
-    model: models;
+    model: AuggieModel;
     auggiePath: string;
     maxIterations: number;
     verifierInterval: number;
@@ -62,7 +60,7 @@ async function program() {
   console.log(`Model: ${opts.model}`);
   console.log(`Auggie: ${opts.auggiePath}`);
 
-  await runOrchestrator({
+  const runOpts: Parameters<typeof runOrchestrator>[0] = {
     frdText,
     builderSystemPrompt: builderSystem,
     verifierSystemPrompt: verifierSystem,
@@ -73,10 +71,17 @@ async function program() {
     maxIterations: opts.maxIterations,
     verifierIntervalSec: opts.verifierInterval,
     maxTurns: opts.maxTurns,
-    allowUnsafe: opts.allowUnsafe,
-    apiKey: opts.apiKey,
-    apiUrl: opts.apiUrl
-  });
+    allowUnsafe: opts.allowUnsafe
+  };
+
+  if (opts.apiKey !== undefined) {
+    runOpts.apiKey = opts.apiKey;
+  }
+  if (opts.apiUrl !== undefined) {
+    runOpts.apiUrl = opts.apiUrl;
+  }
+
+  await runOrchestrator(runOpts);
 
   console.log(pc.bold(pc.green("Done.")));
 }

@@ -6,7 +6,8 @@ import { createBuilderTools, createRefactorerTools, createVerifierTools } from "
 import { mutex } from "./tools/mutex.js";
 import { extractTaggedJson } from "./util/extractTaggedJson.js";
 
-type models = "haiku4.5" | "sonnet4.5" | "sonnet4" | "gpt5";
+type AuggieCreateOpts = NonNullable<Parameters<typeof Auggie.create>[0]>;
+export type AuggieModel = NonNullable<AuggieCreateOpts["model"]>;
 
 type OrchestratorOpts = {
   frdText: string;
@@ -14,7 +15,7 @@ type OrchestratorOpts = {
   verifierSystemPrompt: string;
   refactorerSystemPrompt: string;
   workspaceRoot: string;
-  model: models;
+  model: AuggieModel;
   auggiePath: string;
   maxIterations: number;
   verifierIntervalSec: number;
@@ -99,14 +100,14 @@ export async function runOrchestrator(opts: OrchestratorOpts): Promise<void> {
     lock: mutex
   });
 
-  const commonCreate = {
+  const commonCreate: AuggieCreateOpts = {
     auggiePath: opts.auggiePath,
     workspaceRoot: opts.workspaceRoot,
     model: opts.model,
     allowIndexing: true,
-    ...(opts.apiKey !== undefined && { apiKey: opts.apiKey }),
-    ...(opts.apiUrl !== undefined && { apiUrl: opts.apiUrl }),
-    cliArgs: [`--max-turns=${opts.maxTurns}`]
+    cliArgs: [`--max-turns=${opts.maxTurns}`],
+    ...(opts.apiKey !== undefined ? { apiKey: opts.apiKey } : {}),
+    ...(opts.apiUrl !== undefined ? { apiUrl: opts.apiUrl } : {})
   };
 
   const builderClient = await Auggie.create({ ...commonCreate, tools: builderTools });
